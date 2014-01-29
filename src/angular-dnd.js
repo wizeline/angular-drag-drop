@@ -12,15 +12,17 @@ angular.module('dragAndDrop', [])
         return parent(p, max);
       }
     };
-    var attrs = ['start', 'end', 'ngModel'];
+    var attrs = ['start', 'end'];
     return {
       restrict: 'A',
+      scope: {
+        drag: '='
+      },
       link: function ( $scope, $elem, $attr ) {
         var me = {};
         angular.forEach(attrs, function(attr, key) {
           if($attr[attr]) { me[attr] = $scope.$eval($attr[attr]); }
         });
-        if(angular.isUndefined(me.ngModel)) { return; } 
         var elem  = $elem[0];
 
         elem.addEventListener( 'dragstart', function ( e ) {
@@ -32,7 +34,7 @@ angular.module('dragAndDrop', [])
 
           $elem.addClass('on-drag');
 
-          dndApi.setData(me.ngModel, $elem);
+          dndApi.setData($scope.drag, $elem);
 
           (e.originalEvent || e).dataTransfer.effectAllowed = 'move';
 
@@ -70,7 +72,7 @@ angular.module('dragAndDrop', [])
 
     var areas = [];
     var drags = [];
-    var attrs = ['drop', 'enter', 'leave'];
+    var attrs = ['drop', 'enter', 'leave', 'track'];
 
     return {
       link: function ( $scope, $elem, $attr ) {
@@ -95,7 +97,7 @@ angular.module('dragAndDrop', [])
           if(!$elem.hasClass('draging')){ return; }
           if(angular.isFunction(me.drop)) {
             $scope.$apply(function() {
-              me.drop(result.data, result.element);
+              me.drop(result.data, me.track, result.element);
             });
           }
 
@@ -110,7 +112,7 @@ angular.module('dragAndDrop', [])
           if(elem === e.target && angular.isFunction(me.enter)) {
             $scope.$apply(function() {
               var result = dndApi.getData();
-              me.enter(result.data, result.element);
+              me.enter(result.data, me.track, result.element);
             });
           }
         });
@@ -120,7 +122,7 @@ angular.module('dragAndDrop', [])
             if(angular.isFunction(me.leave)){
               $scope.$apply(function() {
                 var result = dndApi.getData();
-                me.leave(result.data, result.element);
+                me.leave(result.data, me.track, result.element);
               });
             }
           }
