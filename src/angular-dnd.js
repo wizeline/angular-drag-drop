@@ -16,16 +16,27 @@ angular.module('dragAndDrop', [])
     return {
       restrict: 'A',
       scope: {
-        drag: '='
+        drag: '=',
+        enable: "&dragEnable",
       },
       link: function ( $scope, $elem, $attr ) {
         var me = {};
+        if (typeof  $scope.enable() === "undefined") {
+          $scope.isEnabled = true;
+        }else{
+          $scope.isEnabled = $scope.enable(); 
+        }
+
+
         angular.forEach(attrs, function(attr, key) {
           if($attr[attr]) { me[attr] = $scope.$eval($attr[attr]); }
         });
         var elem  = $elem[0];
 
         elem.addEventListener( 'dragstart', function ( e ) {
+          if(!$scope.isEnabled) {
+            return false;
+          }
           if(drags.length === 0) { drags = document.querySelectorAll( '.drop' ); }
 
           angular.forEach(dndApi.areas(), function ( value, key ) {
