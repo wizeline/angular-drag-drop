@@ -13,18 +13,22 @@ angular.module('dragAndDrop', [])
       }
     };
     var attrs = ['start', 'end'];
+
     return {
       restrict: 'A',
       scope: {
         drag: '=',
-        enable: "&dragEnable",
+        enable: '&dragEnable',
+        drawImage: '=',
+        endHandler: '='
       },
       link: function ( $scope, $elem, $attr ) {
-        var me = {};
+        var me = {},
+            drawImage = null;
         if (typeof  $scope.enable() === "undefined") {
           $scope.isEnabled = true;
         }else{
-          $scope.isEnabled = $scope.enable(); 
+          $scope.isEnabled = $scope.enable();
         }
 
 
@@ -43,6 +47,10 @@ angular.module('dragAndDrop', [])
             if(value[0] !== parent($elem, 0)) { value.addClass('draging'); }
           });
 
+          if (me.end === undefined && $scope.endHandler) {
+            me.end = $scope.endHandler;
+          }
+
           $elem.addClass('on-drag');
 
           dndApi.setData($scope.drag, $elem);
@@ -50,6 +58,11 @@ angular.module('dragAndDrop', [])
           (e.originalEvent || e).dataTransfer.effectAllowed = 'move';
 
           (e.originalEvent || e).dataTransfer.setData( 'text', 'test' );
+
+          if ($scope.drawImage) {
+            dragImageElement = document.getElementById('blank-image');
+            (e.originalEvent || e).dataTransfer.setDragImage(dragImageElement, 0, 0);
+          }
 
           if(angular.isFunction(me.start)) {
             $scope.$apply(function() {
@@ -87,7 +100,7 @@ angular.module('dragAndDrop', [])
 
     return {
       link: function ( $scope, $elem, $attr ) {
-        
+
         var me      = {};
         var elem    = $elem[0];
         var left    = elem.offsetLeft,
@@ -120,7 +133,10 @@ angular.module('dragAndDrop', [])
         });
 
         elem.addEventListener ('dragenter', function(e) {
-          if(elem === e.target && angular.isFunction(me.enter)) {
+          var enterOnTarget = function enterOnTarget () {
+            return angular.element(elem).find(e.target).length > 0;
+          };
+          if(enterOnTarget() && angular.isFunction(me.enter)) {
             $scope.$apply(function() {
               var result = dndApi.getData();
               me.enter(result.data, me.track, result.element);
