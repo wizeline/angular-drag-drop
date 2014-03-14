@@ -18,19 +18,13 @@ angular.module('dragAndDrop', [])
       restrict: 'A',
       scope: {
         drag: '=',
-        enable: '&dragEnable',
+        dragEnable: '&',
         drawImage: '=',
         endHandler: '='
       },
       link: function ( $scope, $elem, $attr ) {
         var me = {},
             drawImage = null;
-        if (typeof  $scope.enable() === "undefined") {
-          $scope.isEnabled = true;
-        }else{
-          $scope.isEnabled = $scope.enable();
-        }
-
 
         angular.forEach(attrs, function(attr, key) {
           if($attr[attr]) { me[attr] = $scope.$eval($attr[attr]); }
@@ -38,7 +32,7 @@ angular.module('dragAndDrop', [])
         var elem  = $elem[0];
 
         elem.addEventListener( 'dragstart', function ( e ) {
-          if(!$scope.isEnabled) {
+          if(!$scope.dragEnable()) {
             return false;
           }
           if(drags.length === 0) { drags = document.querySelectorAll( '.drop' ); }
