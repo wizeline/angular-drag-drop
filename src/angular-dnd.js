@@ -32,7 +32,7 @@ angular.module('dragAndDrop', [])
         var elem  = $elem[0];
 
         elem.addEventListener( 'dragstart', function ( e ) {
-          if(!$scope.dragEnable()) {
+          if($scope.dragEnable() === false) {
             return false;
           }
           if(drags.length === 0) { drags = document.querySelectorAll( '.drop' ); }
