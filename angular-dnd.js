@@ -18,19 +18,13 @@ angular.module('dragAndDrop', [])
       restrict: 'A',
       scope: {
         drag: '=',
-        enable: '&dragEnable',
+        dragEnable: '=',
         drawImage: '=',
         endHandler: '='
       },
       link: function ( $scope, $elem, $attr ) {
         var me = {},
             drawImage = null;
-        if (typeof  $scope.enable() === "undefined") {
-          $scope.isEnabled = true;
-        }else{
-          $scope.isEnabled = $scope.enable();
-        }
-
 
         angular.forEach(attrs, function(attr, key) {
           if($attr[attr]) { me[attr] = $scope.$eval($attr[attr]); }
@@ -38,7 +32,7 @@ angular.module('dragAndDrop', [])
         var elem  = $elem[0];
 
         elem.addEventListener( 'dragstart', function ( e ) {
-          if(!$scope.isEnabled) {
+          if(!$scope.dragEnable()) {
             return false;
           }
           if(drags.length === 0) { drags = document.querySelectorAll( '.drop' ); }
@@ -96,7 +90,7 @@ angular.module('dragAndDrop', [])
 
     var areas = [];
     var drags = [];
-    var attrs = ['drop', 'enter', 'leave', 'track'];
+    var attrs = ['drop', 'enter', 'leave', 'track', 'dragEnable'];
 
     return {
       link: function ( $scope, $elem, $attr ) {
@@ -116,6 +110,9 @@ angular.module('dragAndDrop', [])
 
         elem.addEventListener( 'drop', function ( e ) {
           if (e.preventDefault) { e.preventDefault(); }
+          if(me.dragEnable() === false) {
+            return false;
+          }
 
           var result = dndApi.getData();
           if(!$elem.hasClass('draging')){ return; }
@@ -136,6 +133,9 @@ angular.module('dragAndDrop', [])
           var enterOnTarget = function enterOnTarget () {
             return angular.element(elem).find(e.target).length > 0;
           };
+          if(me.dragEnable() === false) {
+            return false;
+          }
           if(enterOnTarget() && angular.isFunction(me.enter)) {
             $scope.$apply(function() {
               var result = dndApi.getData();
@@ -145,6 +145,9 @@ angular.module('dragAndDrop', [])
         });
 
         elem.addEventListener ( 'dragleave', function(e) {
+          if(me.dragEnable() === false) {
+            return false;
+          }
           if((e.x < left || e.x > right) || (e.y < top  || e.y > bottom)) {
             if(angular.isFunction(me.leave)){
               $scope.$apply(function() {
@@ -156,6 +159,9 @@ angular.module('dragAndDrop', [])
         });
 
         elem.addEventListener ( 'dragover', function ( e ) {
+          if(me.dragEnable() === false) {
+            return false;
+          }
           if (e.preventDefault) { e.preventDefault(); }
           return false;
         });
@@ -190,6 +196,3 @@ angular.module('dragAndDrop', [])
       }
     };
   });
-
-
-
